@@ -78,7 +78,7 @@ CREATE TABLE `tb_user` (
   KEY `tb_user_tbu_lastname_index` (`tbu_lastname`),
   KEY `tb_user_tbu_token_salt_index` (`tbu_token_salt`),
   KEY `tb_user_tbu_role_index` (`tbu_role`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -87,7 +87,7 @@ CREATE TABLE `tb_user` (
 
 LOCK TABLES `tb_user` WRITE;
 /*!40000 ALTER TABLE `tb_user` DISABLE KEYS */;
-INSERT INTO `tb_user` VALUES (1,'2019-09-03 15:42:44',0,'2022-11-10 12:58:08',1,'admin@mail.com','202cb962ac59075b964b07152d234b70','admin','admin','123','Jakarta','1981-08-19 00:00:00','active','xycnh1fzl8chkm8cqr20ni6zvh2ai52c3mvw2uwy0s86mscu9u80h6ylym2imghas6h6ffj05taecfoxfu3g0x8alwbt97q9je8f','1111343528-20q4jm5fw1-Cluster-Morizen-Bekasi-Indonesia.jpg','ja1vg9ozc69nzckdxym76mu0110sfsglf7hc','ADMIN'),(25,'2022-11-10 09:48:56',1,'2022-11-10 11:36:05',25,'test@email.com','202cb962ac59075b964b07152d234b70','test','test',NULL,NULL,NULL,'active',NULL,NULL,'q2vgl3wgwg8e5exvz1pu6zsseifrtg4j0gvh','ADMIN');
+INSERT INTO `tb_user` VALUES (1,'2019-09-03 15:42:44',0,'2022-11-10 13:15:57',1,'admin@mail.com','202cb962ac59075b964b07152d234b70','admin','admin','123','Jakarta','1981-08-19 00:00:00','active','xycnh1fzl8chkm8cqr20ni6zvh2ai52c3mvw2uwy0s86mscu9u80h6ylym2imghas6h6ffj05taecfoxfu3g0x8alwbt97q9je8f','1111343528-20q4jm5fw1-Cluster-Morizen-Bekasi-Indonesia.jpg','lk4w7b5pwy7ke7poay1njenn1cf1jejoe6fl','ADMIN'),(25,'2022-11-10 09:48:56',1,'2022-11-10 11:36:05',25,'test@email.com','202cb962ac59075b964b07152d234b70','test','test',NULL,NULL,NULL,'active',NULL,NULL,'q2vgl3wgwg8e5exvz1pu6zsseifrtg4j0gvh','ADMIN'),(26,'2022-11-10 13:24:50',0,'2022-11-10 13:24:53',26,'test2@mail.com','202cb962ac59075b964b07152d234b70','test2','test2',NULL,NULL,NULL,'active',NULL,NULL,'xww9b235ydinsy0nnvmrthtje8g4gfritcl3','ADMIN');
 /*!40000 ALTER TABLE `tb_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -285,4 +285,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-11-10 20:00:00
+-- Dump completed on 2022-11-10 20:25:33
