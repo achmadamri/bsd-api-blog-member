@@ -16,7 +16,8 @@ import com.api.blog.member.util.TokenUtil;
 @Service
 public class TokenService {
 
-	private TokenUtil tokenUtil = new TokenUtil();
+	@Autowired
+	private TokenUtil tokenUtil;
 	
 	@Autowired
 	private TbUserRepository tbUserRepository;

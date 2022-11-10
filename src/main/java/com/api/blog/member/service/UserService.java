@@ -1,6 +1,5 @@
 package com.api.blog.member.service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.api.blog.member.db.entity.TbUser;
-import com.api.blog.member.db.entity.TbUserBrand;
 import com.api.blog.member.db.entity.TbUserMarket;
-import com.api.blog.member.db.entity.TbUserMenu;
 import com.api.blog.member.db.entity.ViewUserBrand;
 import com.api.blog.member.db.entity.ViewUserMenu;
 import com.api.blog.member.db.repository.TbUserBrandRepository;
@@ -44,8 +41,6 @@ import com.api.blog.member.model.user.PostUserChangePasswordRequestModel;
 import com.api.blog.member.model.user.PostUserChangePasswordResponseModel;
 import com.api.blog.member.model.user.PostUserEditRequestModel;
 import com.api.blog.member.model.user.PostUserEditResponseModel;
-import com.api.blog.member.model.user.TbBrand;
-import com.api.blog.member.model.user.TbMarket;
 import com.api.blog.member.util.MD5;
 import com.api.blog.member.util.SimpleMapper;
 import com.api.blog.member.util.TokenUtil;
@@ -59,7 +54,8 @@ public class UserService {
 	@Autowired
 	private Environment env;
 	
-	private TokenUtil tokenUtil = new TokenUtil();
+	@Autowired
+	private TokenUtil tokenUtil;
 	
 	@Autowired
 	private TbUserRepository tbUserRepository;
@@ -234,40 +230,6 @@ public class UserService {
 				tbUser.setTbuRole(requestModel.getTbUser().getTbuRole());
 				tbUserRepository.save(tbUser);
 				
-				for (ViewUserMenu viewUserMenu : requestModel.getLstViewUserMenu()) {
-					TbUserMenu tbUserMenu = new TbUserMenu();
-					tbUserMenu.setTbumCreateDate(new Date());
-					tbUserMenu.setTbumCreateId(optTbUser.get().getTbuId());
-					tbUserMenu.setTbuId(tbUser.getTbuId());
-					tbUserMenu.setTbmId(viewUserMenu.getTbmId());
-					tbUserMenu.setTbumAdd(viewUserMenu.getTbumAdd());
-					tbUserMenu.setTbumEdit(viewUserMenu.getTbumEdit());
-					tbUserMenu.setTbumDelete(viewUserMenu.getTbumDelete());
-					tbUserMenu.setTbumView(viewUserMenu.getTbumView());
-					tbUserMenuRepository.save(tbUserMenu);
-				}
-				
-				for (TbMarket tbMarket : requestModel.getLstTbMarket()) {
-					TbUserMarket tbUserMarket = new TbUserMarket();
-					tbUserMarket.setTbumCreateDate(new Date());
-					tbUserMarket.setTbumCreateId(optTbUser.get().getTbuId());
-					tbUserMarket.setTbuId(tbUser.getTbuId());
-					tbUserMarket.setTbmMarket(tbMarket.getTbmMarket());					
-					tbUserMarket.setTbmMarketCheck(tbMarket.getCheck());
-					tbUserMarketRepository.save(tbUserMarket);
-				}
-				
-				for (TbBrand tbBrand : requestModel.getLstTbBrand()) {
-					TbUserBrand tbUserBrand = new TbUserBrand();
-					tbUserBrand.setTbubCreateDate(new Date());
-					tbUserBrand.setTbubCreateId(optTbUser.get().getTbuId());
-					tbUserBrand.setTbuId(tbUser.getTbuId());
-					tbUserBrand.setTbbBrand(tbBrand.getTbbBrand());					
-					tbUserBrand.setTbbBrandId(tbBrand.getTbbBrandId());
-					tbUserBrand.setTbbBrandCheck(tbBrand.getCheck());
-					tbUserBrandRepository.save(tbUserBrand);
-				}
-				
 				RestTemplate restTemplate = new RestTemplate();
 				
 				PostAddRequestModel postAddRequestModel = new PostAddRequestModel();				
@@ -282,64 +244,17 @@ public class UserService {
 				HttpEntity<PostAddRequestModel> requestPostAdd = new HttpEntity<>(postAddRequestModel);
 				restTemplate.postForEntity(env.getProperty("services.bsd.api.blog.auth") + "auth/postadd", requestPostAdd, String.class);
 				
+				
 				SimpleMapper simpleMapper = new SimpleMapper();
 				
-				com.api.blog.member.model.order.PostUserAddRequestModel postUserAddOrderRequestModel = new com.api.blog.member.model.order.PostUserAddRequestModel();
+				com.api.blog.member.model.post.PostUserAddRequestModel postUserAddOrderRequestModel = new com.api.blog.member.model.post.PostUserAddRequestModel();
 				postUserAddOrderRequestModel.setEmail(requestModel.getEmail());
 				postUserAddOrderRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.order.TbUser postUserAddOrderTbUser = new com.api.blog.member.model.order.TbUser();
-				postUserAddOrderTbUser = (com.api.blog.member.model.order.TbUser) simpleMapper.assign(tbUser, postUserAddOrderTbUser);
+				com.api.blog.member.model.post.TbUser postUserAddOrderTbUser = new com.api.blog.member.model.post.TbUser();
+				postUserAddOrderTbUser = (com.api.blog.member.model.post.TbUser) simpleMapper.assign(tbUser, postUserAddOrderTbUser);
 				postUserAddOrderRequestModel.setTbUser(postUserAddOrderTbUser);
-				List<com.api.blog.member.model.order.TbUserBrand> lstOrderTbUserBrand = new ArrayList<com.api.blog.member.model.order.TbUserBrand>();
-				for (TbBrand tbBrand : requestModel.getLstTbBrand()) {
-					com.api.blog.member.model.order.TbUserBrand tbUserBrand = new com.api.blog.member.model.order.TbUserBrand();
-					tbUserBrand.setTbuId(tbUser.getTbuId());
-					tbUserBrand.setTbbBrand(tbBrand.getTbbBrand());					
-					tbUserBrand.setTbbBrandId(tbBrand.getTbbBrandId());
-					tbUserBrand.setTbbBrandCheck(tbBrand.getCheck());
-					lstOrderTbUserBrand.add(tbUserBrand);
-				}
-				postUserAddOrderRequestModel.setLstTbUserBrand(lstOrderTbUserBrand);
-				HttpEntity<com.api.blog.member.model.order.PostUserAddRequestModel> requestPostUserAddOrder = new HttpEntity<>(postUserAddOrderRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.order") + "user/postuseradd", requestPostUserAddOrder, String.class);
-				
-				com.api.blog.member.model.product.PostUserAddRequestModel postUserAddProductRequestModel = new com.api.blog.member.model.product.PostUserAddRequestModel();
-				postUserAddProductRequestModel.setEmail(requestModel.getEmail());
-				postUserAddProductRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.product.TbUser postUserAddProductTbUser = new com.api.blog.member.model.product.TbUser();
-				postUserAddProductTbUser = (com.api.blog.member.model.product.TbUser) simpleMapper.assign(tbUser, postUserAddProductTbUser);
-				postUserAddProductRequestModel.setTbUser(postUserAddProductTbUser);
-				List<com.api.blog.member.model.product.TbUserBrand> lstProductTbUserBrand = new ArrayList<com.api.blog.member.model.product.TbUserBrand>();
-				for (TbBrand tbBrand : requestModel.getLstTbBrand()) {
-					com.api.blog.member.model.product.TbUserBrand tbUserBrand = new com.api.blog.member.model.product.TbUserBrand();
-					tbUserBrand.setTbuId(tbUser.getTbuId());
-					tbUserBrand.setTbbBrand(tbBrand.getTbbBrand());					
-					tbUserBrand.setTbbBrandId(tbBrand.getTbbBrandId());
-					tbUserBrand.setTbbBrandCheck(tbBrand.getCheck());
-					lstProductTbUserBrand.add(tbUserBrand);
-				}
-				postUserAddProductRequestModel.setLstTbUserBrand(lstProductTbUserBrand);
-				HttpEntity<com.api.blog.member.model.product.PostUserAddRequestModel> requestPostUserAddProduct = new HttpEntity<>(postUserAddProductRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.product") + "user/postuseradd", requestPostUserAddProduct, String.class);
-				
-				com.api.blog.member.model.report.PostUserAddRequestModel postUserAddReportRequestModel = new com.api.blog.member.model.report.PostUserAddRequestModel();
-				postUserAddReportRequestModel.setEmail(requestModel.getEmail());
-				postUserAddReportRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.report.TbUser postUserAddReportTbUser = new com.api.blog.member.model.report.TbUser();
-				postUserAddReportTbUser = (com.api.blog.member.model.report.TbUser) simpleMapper.assign(tbUser, postUserAddReportTbUser);
-				postUserAddReportRequestModel.setTbUser(postUserAddReportTbUser);
-				List<com.api.blog.member.model.report.TbUserBrand> lstReportTbUserBrand = new ArrayList<com.api.blog.member.model.report.TbUserBrand>();
-				for (TbBrand tbBrand : requestModel.getLstTbBrand()) {
-					com.api.blog.member.model.report.TbUserBrand tbUserBrand = new com.api.blog.member.model.report.TbUserBrand();
-					tbUserBrand.setTbuId(tbUser.getTbuId());
-					tbUserBrand.setTbbBrand(tbBrand.getTbbBrand());					
-					tbUserBrand.setTbbBrandId(tbBrand.getTbbBrandId());
-					tbUserBrand.setTbbBrandCheck(tbBrand.getCheck());
-					lstReportTbUserBrand.add(tbUserBrand);
-				}
-				postUserAddReportRequestModel.setLstTbUserBrand(lstReportTbUserBrand);
-				HttpEntity<com.api.blog.member.model.report.PostUserAddRequestModel> requestPostUserAddReport = new HttpEntity<>(postUserAddReportRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.report") + "user/postuseradd", requestPostUserAddReport, String.class);
+				HttpEntity<com.api.blog.member.model.post.PostUserAddRequestModel> requestPostUserAddOrder = new HttpEntity<>(postUserAddOrderRequestModel);
+				restTemplate.postForEntity(env.getProperty("services.bsd.api.blog.post") + "user/postuseradd", requestPostUserAddOrder, String.class);
 			}
 			
 			responseModel.setStatus("200");
@@ -380,53 +295,6 @@ public class UserService {
 				optTbUserExisting.get().setTbuUpdateId(optTbUser.get().getTbuId());
 				tbUserRepository.save(optTbUserExisting.get());
 				
-				TbUserMenu exampleTbUserMenu = new TbUserMenu();
-				exampleTbUserMenu.setTbuId(optTbUserExisting.get().getTbuId());
-				List<TbUserMenu> lstTbUserMenu = tbUserMenuRepository.findAll(Example.of(exampleTbUserMenu));
-				tbUserMenuRepository.deleteAll(lstTbUserMenu);
-				for (ViewUserMenu viewUserMenu : requestModel.getLstViewUserMenu()) {
-					TbUserMenu tbUserMenu = new TbUserMenu();
-					tbUserMenu.setTbumCreateDate(new Date());
-					tbUserMenu.setTbumCreateId(optTbUser.get().getTbuId());
-					tbUserMenu.setTbuId(optTbUserExisting.get().getTbuId());
-					tbUserMenu.setTbmId(viewUserMenu.getTbmId());
-					tbUserMenu.setTbumAdd(viewUserMenu.getTbumAdd());
-					tbUserMenu.setTbumEdit(viewUserMenu.getTbumEdit());
-					tbUserMenu.setTbumDelete(viewUserMenu.getTbumDelete());
-					tbUserMenu.setTbumView(viewUserMenu.getTbumView());
-					tbUserMenuRepository.save(tbUserMenu);
-				}
-				
-				TbUserMarket exampleTbUserMarket = new TbUserMarket();
-				exampleTbUserMarket.setTbuId(optTbUserExisting.get().getTbuId());
-				List<TbUserMarket> lstTbUserMarket = tbUserMarketRepository.findAll(Example.of(exampleTbUserMarket));
-				tbUserMarketRepository.deleteAll(lstTbUserMarket);
-				for (TbMarket tbMarket : requestModel.getLstTbMarket()) {
-					TbUserMarket tbUserMarket = new TbUserMarket();
-					tbUserMarket.setTbumCreateDate(new Date());
-					tbUserMarket.setTbumCreateId(optTbUser.get().getTbuId());
-					tbUserMarket.setTbuId(optTbUserExisting.get().getTbuId());
-					tbUserMarket.setTbmMarket(tbMarket.getTbmMarket());					
-					tbUserMarket.setTbmMarketCheck(tbMarket.getCheck());
-					tbUserMarketRepository.save(tbUserMarket);
-				}
-				lstTbUserMarket = tbUserMarketRepository.findAll(Example.of(exampleTbUserMarket));
-				
-				TbUserBrand exampleTbUserBrand = new TbUserBrand();
-				exampleTbUserBrand.setTbuId(optTbUserExisting.get().getTbuId());
-				List<TbUserBrand> lstTbUserBrand = tbUserBrandRepository.findAll(Example.of(exampleTbUserBrand));
-				tbUserBrandRepository.deleteAll(lstTbUserBrand);
-				for (ViewUserBrand viewUserBrand : requestModel.getLstViewUserBrand()) {
-					TbUserBrand tbUserBrand = new TbUserBrand();
-					tbUserBrand.setTbubCreateDate(new Date());
-					tbUserBrand.setTbubCreateId(optTbUser.get().getTbuId());
-					tbUserBrand.setTbuId(optTbUserExisting.get().getTbuId());
-					tbUserBrand.setTbbBrand(viewUserBrand.getTbbBrand());					
-					tbUserBrand.setTbbBrandId(viewUserBrand.getTbbBrandId());
-					tbUserBrand.setTbbBrandCheck(viewUserBrand.getTbbBrandCheck());
-					tbUserBrandRepository.save(tbUserBrand);
-				}
-				
 				RestTemplate restTemplate = new RestTemplate();
 				
 				PutUpdateRequestModel putUpdateRequestModel = new PutUpdateRequestModel();
@@ -436,92 +304,6 @@ public class UserService {
 				putUpdateRequestModel.setTbaStatus(optTbUserExisting.get().getTbuStatus());
 				HttpEntity<PutUpdateRequestModel> requestPutUpdate = new HttpEntity<>(putUpdateRequestModel);
 				restTemplate.put(env.getProperty("services.bsd.api.blog.auth") + "auth/putupdate", requestPutUpdate, String.class);
-				
-				SimpleMapper simpleMapper = new SimpleMapper();
-				
-				com.api.blog.member.model.order.PostUserEditRequestModel postUserEditOrderRequestModel = new com.api.blog.member.model.order.PostUserEditRequestModel();
-				postUserEditOrderRequestModel.setEmail(requestModel.getEmail());
-				postUserEditOrderRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.order.TbUser postUserEditOrderTbUser = new com.api.blog.member.model.order.TbUser();
-				postUserEditOrderTbUser = (com.api.blog.member.model.order.TbUser) simpleMapper.assign(optTbUserExisting.get(), postUserEditOrderTbUser);
-				postUserEditOrderRequestModel.setTbUser(postUserEditOrderTbUser);
-				List<com.api.blog.member.model.order.TbUserMarket> lstOrderTbUserMarket = new ArrayList<com.api.blog.member.model.order.TbUserMarket>();
-				for (TbUserMarket tbUserMarket : lstTbUserMarket) {
-					com.api.blog.member.model.order.TbUserMarket tbUserMarket_ = new com.api.blog.member.model.order.TbUserMarket();
-					tbUserMarket_.setTbuId(tbUserMarket.getTbuId());
-					tbUserMarket_.setTbmMarket(tbUserMarket.getTbmMarket());
-					tbUserMarket_.setTbmMarketCheck(tbUserMarket.getTbmMarketCheck());
-					lstOrderTbUserMarket.add(tbUserMarket_);
-				}
-				postUserEditOrderRequestModel.setLstTbUserMarket(lstOrderTbUserMarket);
-				List<com.api.blog.member.model.order.TbUserBrand> lstOrderTbUserBrand = new ArrayList<com.api.blog.member.model.order.TbUserBrand>();
-				for (ViewUserBrand viewUserBrand : requestModel.getLstViewUserBrand()) {
-					com.api.blog.member.model.order.TbUserBrand tbUserBrand = new com.api.blog.member.model.order.TbUserBrand();
-					tbUserBrand.setTbuId(viewUserBrand.getTbuId());
-					tbUserBrand.setTbbBrand(viewUserBrand.getTbbBrand());
-					tbUserBrand.setTbbBrandId(viewUserBrand.getTbbBrandId());
-					tbUserBrand.setTbbBrandCheck(viewUserBrand.getTbbBrandCheck());
-					lstOrderTbUserBrand.add(tbUserBrand);
-				}
-				postUserEditOrderRequestModel.setLstTbUserBrand(lstOrderTbUserBrand);
-				HttpEntity<com.api.blog.member.model.order.PostUserEditRequestModel> requestPostUserEditOrder = new HttpEntity<>(postUserEditOrderRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.order") + "user/postuseredit", requestPostUserEditOrder, String.class);
-				
-				com.api.blog.member.model.product.PostUserEditRequestModel postUserEditProductRequestModel = new com.api.blog.member.model.product.PostUserEditRequestModel();
-				postUserEditProductRequestModel.setEmail(requestModel.getEmail());
-				postUserEditProductRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.product.TbUser postUserEditProductTbUser = new com.api.blog.member.model.product.TbUser();
-				postUserEditProductTbUser = (com.api.blog.member.model.product.TbUser) simpleMapper.assign(optTbUserExisting.get(), postUserEditProductTbUser);
-				postUserEditProductRequestModel.setTbUser(postUserEditProductTbUser);
-				List<com.api.blog.member.model.product.TbUserMarket> lstProductTbUserMarket = new ArrayList<com.api.blog.member.model.product.TbUserMarket>();
-				for (TbUserMarket tbUserMarket : lstTbUserMarket) {
-					com.api.blog.member.model.product.TbUserMarket tbUserMarket_ = new com.api.blog.member.model.product.TbUserMarket();
-					tbUserMarket_.setTbuId(tbUserMarket.getTbuId());
-					tbUserMarket_.setTbmMarket(tbUserMarket.getTbmMarket());
-					tbUserMarket_.setTbmMarketCheck(tbUserMarket.getTbmMarketCheck());
-					lstProductTbUserMarket.add(tbUserMarket_);
-				}
-				postUserEditProductRequestModel.setLstTbUserMarket(lstProductTbUserMarket);
-				List<com.api.blog.member.model.product.TbUserBrand> lstProductTbUserBrand = new ArrayList<com.api.blog.member.model.product.TbUserBrand>();
-				for (ViewUserBrand viewUserBrand : requestModel.getLstViewUserBrand()) {
-					com.api.blog.member.model.product.TbUserBrand tbUserBrand = new com.api.blog.member.model.product.TbUserBrand();
-					tbUserBrand.setTbuId(viewUserBrand.getTbuId());
-					tbUserBrand.setTbbBrand(viewUserBrand.getTbbBrand());
-					tbUserBrand.setTbbBrandId(viewUserBrand.getTbbBrandId());
-					tbUserBrand.setTbbBrandCheck(viewUserBrand.getTbbBrandCheck());
-					lstProductTbUserBrand.add(tbUserBrand);
-				}
-				postUserEditProductRequestModel.setLstTbUserBrand(lstProductTbUserBrand);
-				HttpEntity<com.api.blog.member.model.product.PostUserEditRequestModel> requestPostUserEditProduct = new HttpEntity<>(postUserEditProductRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.product") + "user/postuseredit", requestPostUserEditProduct, String.class);
-				
-				com.api.blog.member.model.report.PostUserEditRequestModel postUserEditReportRequestModel = new com.api.blog.member.model.report.PostUserEditRequestModel();
-				postUserEditReportRequestModel.setEmail(requestModel.getEmail());
-				postUserEditReportRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.report.TbUser postUserEditReportTbUser = new com.api.blog.member.model.report.TbUser();
-				postUserEditReportTbUser = (com.api.blog.member.model.report.TbUser) simpleMapper.assign(optTbUserExisting.get(), postUserEditReportTbUser);
-				postUserEditReportRequestModel.setTbUser(postUserEditReportTbUser);
-				List<com.api.blog.member.model.report.TbUserMarket> lstReportTbUserMarket = new ArrayList<com.api.blog.member.model.report.TbUserMarket>();
-				for (TbUserMarket tbUserMarket : lstTbUserMarket) {
-					com.api.blog.member.model.report.TbUserMarket tbUserMarket_ = new com.api.blog.member.model.report.TbUserMarket();
-					tbUserMarket_.setTbuId(tbUserMarket.getTbuId());
-					tbUserMarket_.setTbmMarket(tbUserMarket.getTbmMarket());
-					tbUserMarket_.setTbmMarketCheck(tbUserMarket.getTbmMarketCheck());
-					lstReportTbUserMarket.add(tbUserMarket_);
-				}
-				postUserEditReportRequestModel.setLstTbUserMarket(lstReportTbUserMarket);
-				List<com.api.blog.member.model.report.TbUserBrand> lstReportTbUserBrand = new ArrayList<com.api.blog.member.model.report.TbUserBrand>();
-				for (ViewUserBrand viewUserBrand : requestModel.getLstViewUserBrand()) {
-					com.api.blog.member.model.report.TbUserBrand tbUserBrand = new com.api.blog.member.model.report.TbUserBrand();
-					tbUserBrand.setTbuId(viewUserBrand.getTbuId());
-					tbUserBrand.setTbbBrand(viewUserBrand.getTbbBrand());					
-					tbUserBrand.setTbbBrandId(viewUserBrand.getTbbBrandId());
-					tbUserBrand.setTbbBrandCheck(viewUserBrand.getTbbBrandCheck());
-					lstReportTbUserBrand.add(tbUserBrand);
-				}
-				postUserEditReportRequestModel.setLstTbUserBrand(lstReportTbUserBrand);
-				HttpEntity<com.api.blog.member.model.report.PostUserEditRequestModel> requestPostUserEditReport = new HttpEntity<>(postUserEditReportRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.report") + "user/postuseredit", requestPostUserEditReport, String.class);
 				
 				responseModel.setStatus("200");
 				responseModel.setMessage("User " + optTbUserExisting.get().getTbuEmail() + " updated");
@@ -567,35 +349,6 @@ public class UserService {
 				putUpdateRequestModel.setTbaStatus(optTbUserExisting.get().getTbuStatus());
 				HttpEntity<PutUpdateRequestModel> requestPutUpdate = new HttpEntity<>(putUpdateRequestModel);
 				restTemplate.put(env.getProperty("services.bsd.api.blog.auth") + "auth/putupdate", requestPutUpdate, String.class);
-				
-				SimpleMapper simpleMapper = new SimpleMapper();
-				
-				com.api.blog.member.model.order.PostUserChangePasswordRequestModel postUserChangePasswordOrderRequestModel = new com.api.blog.member.model.order.PostUserChangePasswordRequestModel();
-				postUserChangePasswordOrderRequestModel.setEmail(requestModel.getEmail());
-				postUserChangePasswordOrderRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.order.TbUser postUserChangePasswordOrderTbUser = new com.api.blog.member.model.order.TbUser();
-				postUserChangePasswordOrderTbUser = (com.api.blog.member.model.order.TbUser) simpleMapper.assign(optTbUserExisting.get(), postUserChangePasswordOrderTbUser);
-				postUserChangePasswordOrderRequestModel.setTbUser(postUserChangePasswordOrderTbUser);
-				HttpEntity<com.api.blog.member.model.order.PostUserChangePasswordRequestModel> requestPostUserChangePasswordOrder = new HttpEntity<>(postUserChangePasswordOrderRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.order") + "user/postuserchangepassword", requestPostUserChangePasswordOrder, String.class);
-				
-				com.api.blog.member.model.product.PostUserChangePasswordRequestModel postUserChangePasswordProductRequestModel = new com.api.blog.member.model.product.PostUserChangePasswordRequestModel();
-				postUserChangePasswordProductRequestModel.setEmail(requestModel.getEmail());
-				postUserChangePasswordProductRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.product.TbUser postUserChangePasswordProductTbUser = new com.api.blog.member.model.product.TbUser();
-				postUserChangePasswordProductTbUser = (com.api.blog.member.model.product.TbUser) simpleMapper.assign(optTbUserExisting.get(), postUserChangePasswordProductTbUser);
-				postUserChangePasswordProductRequestModel.setTbUser(postUserChangePasswordProductTbUser);
-				HttpEntity<com.api.blog.member.model.product.PostUserChangePasswordRequestModel> requestPostUserChangePasswordProduct = new HttpEntity<>(postUserChangePasswordProductRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.product") + "user/postuserchangepassword", requestPostUserChangePasswordProduct, String.class);
-				
-				com.api.blog.member.model.report.PostUserChangePasswordRequestModel postUserChangePasswordReportRequestModel = new com.api.blog.member.model.report.PostUserChangePasswordRequestModel();
-				postUserChangePasswordReportRequestModel.setEmail(requestModel.getEmail());
-				postUserChangePasswordReportRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.report.TbUser postUserChangePasswordReportTbUser = new com.api.blog.member.model.report.TbUser();
-				postUserChangePasswordReportTbUser = (com.api.blog.member.model.report.TbUser) simpleMapper.assign(optTbUserExisting.get(), postUserChangePasswordReportTbUser);
-				postUserChangePasswordReportRequestModel.setTbUser(postUserChangePasswordReportTbUser);
-				HttpEntity<com.api.blog.member.model.report.PostUserChangePasswordRequestModel> requestPostUserChangePasswordReport = new HttpEntity<>(postUserChangePasswordReportRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.dms.report") + "user/postuserchangepassword", requestPostUserChangePasswordReport, String.class);
 				
 				responseModel.setStatus("200");
 				responseModel.setMessage("User change password");
