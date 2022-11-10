@@ -1,6 +1,5 @@
-package com.api.blog.member.model.order;
+package com.api.blog.member.model.post;
 
-import com.api.blog.member.db.entity.TbUser;
 import com.api.blog.member.model.ResponseModel;
 
 public class PostUserChangePasswordResponseModel extends ResponseModel {

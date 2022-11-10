@@ -1,4 +1,4 @@
-package com.api.blog.member.model.product;
+package com.api.blog.member.model.post;
 
 import com.api.blog.member.model.RequestModel;
 

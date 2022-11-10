@@ -1,13 +1,11 @@
-package com.api.blog.member.model.report;
+package com.api.blog.member.model.post;
 
 import java.util.List;
 
 import com.api.blog.member.model.RequestModel;
 
-public class PostUserEditRequestModel extends RequestModel {
+public class PostUserAddRequestModel extends RequestModel {
 	private TbUser tbUser;
-	
-	private List<TbUserMarket> lstTbUserMarket;
 	
 	private List<TbUserBrand> lstTbUserBrand;
 
@@ -17,14 +15,6 @@ public class PostUserEditRequestModel extends RequestModel {
 
 	public void setTbUser(TbUser tbUser) {
 		this.tbUser = tbUser;
-	}
-
-	public List<TbUserMarket> getLstTbUserMarket() {
-		return lstTbUserMarket;
-	}
-
-	public void setLstTbUserMarket(List<TbUserMarket> lstTbUserMarket) {
-		this.lstTbUserMarket = lstTbUserMarket;
 	}
 
 	public List<TbUserBrand> getLstTbUserBrand() {

@@ -1,4 +1,4 @@
-package com.api.blog.member.model.order;
+package com.api.blog.member.model.post;
 
 public class PostUserAddResponseModel {
 
