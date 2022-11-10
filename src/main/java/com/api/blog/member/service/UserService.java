@@ -202,67 +202,54 @@ public class UserService {
 	public PostUserAddResponseModel postUserAdd(PostUserAddRequestModel requestModel) throws Exception {
 		PostUserAddResponseModel responseModel = new PostUserAddResponseModel(requestModel);
 		
-		tokenUtil.claims(requestModel);
+		TbUser exampleTbUserNew = new TbUser();
+		exampleTbUserNew.setTbuEmail(requestModel.getTbUser().getTbuEmail());
+		Optional<TbUser> optTbUserNew = tbUserRepository.findOne(Example.of(exampleTbUserNew));
 		
-		TbUser exampleTbUser = new TbUser();
-		exampleTbUser.setTbuEmail(requestModel.getEmail());
-		exampleTbUser.setTbuStatus(TbUserRepository.Active);
-		Optional<TbUser> optTbUser = tbUserRepository.findOne(Example.of(exampleTbUser));
-		
-		if (optTbUser.isPresent()) {
-			TbUser exampleTbUserNew = new TbUser();
-			exampleTbUserNew.setTbuEmail(requestModel.getTbUser().getTbuEmail());
-			Optional<TbUser> optTbUserNew = tbUserRepository.findOne(Example.of(exampleTbUserNew));
-			
-			if (optTbUserNew.isPresent()) {
-				responseModel.setStatus("403");
-				responseModel.setMessage("Data already exists. Email : " + requestModel.getTbUser().getTbuEmail());
-			} else {
-				TbUser tbUser = new TbUser();
-				tbUser.setTbuEmail(requestModel.getTbUser().getTbuEmail());
-				tbUser.setTbuFirstname(requestModel.getTbUser().getTbuFirstname());
-				tbUser.setTbuLastname(requestModel.getTbUser().getTbuLastname());
-				tbUser.setTbuPassword(new MD5().get(requestModel.getTbUser().getTbuPassword()));
-				tbUser.setTbuCreateDate(new Date());
-				tbUser.setTbuCreateId(optTbUser.get().getTbuId());
-				tbUser.setTbuStatus(TbUserRepository.Active);
-				tbUser.setTbuTokenSalt(new Uid().generateString(36));
-				tbUser.setTbuRole(requestModel.getTbUser().getTbuRole());
-				tbUserRepository.save(tbUser);
-				
-				RestTemplate restTemplate = new RestTemplate();
-				
-				PostAddRequestModel postAddRequestModel = new PostAddRequestModel();				
-				postAddRequestModel.setEmail(requestModel.getEmail());
-				postAddRequestModel.setToken(requestModel.getToken());
-				postAddRequestModel.setTbaEmail(tbUser.getTbuEmail());
-				postAddRequestModel.setTbaRole(tbUser.getTbuRole());
-				postAddRequestModel.setTbaPassword(tbUser.getTbuPassword());
-				postAddRequestModel.setTbaStatus(tbUser.getTbuStatus());
-				postAddRequestModel.setTbaTokenSalt(tbUser.getTbuTokenSalt());
-				postAddRequestModel.setTbaRole(tbUser.getTbuRole());
-				HttpEntity<PostAddRequestModel> requestPostAdd = new HttpEntity<>(postAddRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.blog.auth") + "auth/postadd", requestPostAdd, String.class);
-				
-				
-				SimpleMapper simpleMapper = new SimpleMapper();
-				
-				com.api.blog.member.model.post.PostUserAddRequestModel postUserAddOrderRequestModel = new com.api.blog.member.model.post.PostUserAddRequestModel();
-				postUserAddOrderRequestModel.setEmail(requestModel.getEmail());
-				postUserAddOrderRequestModel.setToken(requestModel.getToken());
-				com.api.blog.member.model.post.TbUser postUserAddOrderTbUser = new com.api.blog.member.model.post.TbUser();
-				postUserAddOrderTbUser = (com.api.blog.member.model.post.TbUser) simpleMapper.assign(tbUser, postUserAddOrderTbUser);
-				postUserAddOrderRequestModel.setTbUser(postUserAddOrderTbUser);
-				HttpEntity<com.api.blog.member.model.post.PostUserAddRequestModel> requestPostUserAddOrder = new HttpEntity<>(postUserAddOrderRequestModel);
-				restTemplate.postForEntity(env.getProperty("services.bsd.api.blog.post") + "user/postuseradd", requestPostUserAddOrder, String.class);
-			}
-			
-			responseModel.setStatus("200");
-			responseModel.setMessage("User created");
+		if (optTbUserNew.isPresent()) {
+			responseModel.setStatus("403");
+			responseModel.setMessage("Data already exists. Email : " + requestModel.getTbUser().getTbuEmail());
 		} else {
-			responseModel.setStatus("404");
-			responseModel.setMessage("Not found");
+			TbUser tbUser = new TbUser();
+			tbUser.setTbuEmail(requestModel.getTbUser().getTbuEmail());
+			tbUser.setTbuFirstname(requestModel.getTbUser().getTbuFirstname());
+			tbUser.setTbuLastname(requestModel.getTbUser().getTbuLastname());
+			tbUser.setTbuPassword(new MD5().get(requestModel.getTbUser().getTbuPassword()));
+			tbUser.setTbuCreateDate(new Date());
+			tbUser.setTbuCreateId(0);
+			tbUser.setTbuStatus(TbUserRepository.Active);
+			tbUser.setTbuTokenSalt(new Uid().generateString(36));
+			tbUser.setTbuRole(requestModel.getTbUser().getTbuRole());
+			tbUserRepository.save(tbUser);
+			
+			RestTemplate restTemplate = new RestTemplate();
+			
+			PostAddRequestModel postAddRequestModel = new PostAddRequestModel();				
+			postAddRequestModel.setEmail(requestModel.getEmail());
+			postAddRequestModel.setToken(requestModel.getToken());
+			postAddRequestModel.setTbaEmail(tbUser.getTbuEmail());
+			postAddRequestModel.setTbaRole(tbUser.getTbuRole());
+			postAddRequestModel.setTbaPassword(tbUser.getTbuPassword());
+			postAddRequestModel.setTbaStatus(tbUser.getTbuStatus());
+			postAddRequestModel.setTbaTokenSalt(tbUser.getTbuTokenSalt());
+			postAddRequestModel.setTbaRole(tbUser.getTbuRole());
+			HttpEntity<PostAddRequestModel> requestPostAdd = new HttpEntity<>(postAddRequestModel);
+			restTemplate.postForEntity(env.getProperty("services.bsd.api.blog.auth") + "auth/postadd", requestPostAdd, String.class);
+			
+			SimpleMapper simpleMapper = new SimpleMapper();
+			
+			com.api.blog.member.model.post.PostUserAddRequestModel postUserAddOrderRequestModel = new com.api.blog.member.model.post.PostUserAddRequestModel();
+			postUserAddOrderRequestModel.setEmail(requestModel.getEmail());
+			postUserAddOrderRequestModel.setToken(requestModel.getToken());
+			com.api.blog.member.model.post.TbUser postUserAddOrderTbUser = new com.api.blog.member.model.post.TbUser();
+			postUserAddOrderTbUser = (com.api.blog.member.model.post.TbUser) simpleMapper.assign(tbUser, postUserAddOrderTbUser);
+			postUserAddOrderRequestModel.setTbUser(postUserAddOrderTbUser);
+			HttpEntity<com.api.blog.member.model.post.PostUserAddRequestModel> requestPostUserAddOrder = new HttpEntity<>(postUserAddOrderRequestModel);
+			restTemplate.postForEntity(env.getProperty("services.bsd.api.blog.post") + "user/postuseradd", requestPostUserAddOrder, String.class);
 		}
+		
+		responseModel.setStatus("200");
+		responseModel.setMessage("User created");
 		
 		return responseModel;
 	}
