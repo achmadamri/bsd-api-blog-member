@@ -1,9 +1,9 @@
-package com.api.blog.member.model.product;
+package com.api.blog.member.model.post;
 
-public class PostUserAddResponseModel {
+public class PostUserEditResponseModel {
 
 	private TbUser tbUser;
-	
+
 	public TbUser getTbUser() {
 		return tbUser;
 	}

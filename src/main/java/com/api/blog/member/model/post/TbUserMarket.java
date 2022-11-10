@@ -1,11 +1,7 @@
-package com.api.blog.member.model.order;
+package com.api.blog.member.model.post;
 
 import java.io.Serializable;
 import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 public class TbUserMarket implements Serializable {
 	private static final long serialVersionUID = 1L;
